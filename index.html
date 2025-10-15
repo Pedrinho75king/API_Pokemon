@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <title>Pokémon API - JavaScript</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="container">
+    <h1>Pokémon API</h1>
+    <p>Pesquise um Pokémon pelo nome ou número da Pokédex:</p>
+
+    <input type="text" id="pokemonInput" placeholder="Ex: charizard ou 6">
+    <button class="button" onclick="handleSearch()">Buscar Pokémon</button>
+
+    <div class="pokemon-info" id="pokemonInfo">
+      <!-- Os dados do Pokémon serão inseridos aqui -->
+    </div>
+  </div>
+
+  <script>
+    function renderPokemon(data) {
+      const container = document.getElementById("pokemonInfo");
+
+      const types = data.types.map(t => t.type.name).join(", ");
+      const abilities = data.abilities.map(a => a.ability.name).join(", ");
+      const stats = data.stats.map(stat => `
+        <li><strong>${stat.stat.name}:</strong> ${stat.base_stat}</li>
+      `).join("");
+
+      container.innerHTML = `
+        <div class="pokemon-card">
+          <h2>${data.name.charAt(0).toUpperCase() + data.name.slice(1)} (#${data.id})</h2>
+          <img src="${data.sprites.other['official-artwork'].front_default}" alt="${data.name}">
+          
+          <ul>
+            <li><strong>Altura:</strong> ${data.height / 10} m</li>
+            <li><strong>Peso:</strong> ${data.weight / 10} kg</li>
+            <li><strong>Tipos:</strong> ${types}</li>
+            <li><strong>Habilidades:</strong> ${abilities}</li>
+            <li><strong>Experiência base:</strong> ${data.base_experience}</li>
+          </ul>
+
+          <h3>Status base:</h3>
+          <ul class="stats-list">
+            ${stats}
+          </ul>
+        </div>
+      `;
+    }
+
+    async function getPokemonData(pokemonName) {
+      try {
+        const response = await fetch(`https://pokeapi.co/api/v2/pokemon/${pokemonName.toLowerCase().trim()}`);
+        if (!response.ok) throw new Error("Pokémon não encontrado!");
+        const data = await response.json();
+        renderPokemon(data);
+      } catch (error) {
+        document.getElementById("pokemonInfo").innerHTML = `<p>${error.message}</p>`;
+      }
+    }
+
+    function handleSearch() {
+      const input = document.getElementById("pokemonInput");
+      const pokemonName = input.value;
+      if (pokemonName) {
+        getPokemonData(pokemonName);
+      } else {
+        alert("Digite o nome ou número do Pokémon.");
+      }
+    }
+  </script>
+</body>
+</html>
